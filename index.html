@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Batalla Naval · Sala de Operaciones</title>
+<title>Batalla Naval · Generador de Disparos</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,11 +20,12 @@
 <section id="screen-register" class="screen center-screen">
   <div class="panel-card">
     <div class="panel-badge">⚓</div>
-    <p class="eyebrow">Comando de Flota &mdash; Sala de Operaciones</p>
+    <p class="eyebrow">Asistente de Mesa</p>
     <h1 class="title">BATALLA<span>NAVAL</span></h1>
-    <p class="subtitle">Regístrate para tomar el mando del sonar</p>
+    <p class="subtitle">Usa tu tablero físico. Esta app solo saca las tarjetas de disparo.</p>
 
     <form id="register-form" class="form" autocomplete="off">
+      <p class="form-section-label">Tus datos</p>
       <label class="field">
         <span class="field-label">Nombre</span>
         <input type="text" id="first-name" required maxlength="30" placeholder="Ej. Sofía">
@@ -38,6 +39,16 @@
         <input type="text" id="grade" required maxlength="10" placeholder="Ej. 8-P">
       </label>
 
+      <p class="form-section-label form-section-label--rival">Datos de tu rival</p>
+      <label class="field">
+        <span class="field-label">Nombre del rival</span>
+        <input type="text" id="opp-first-name" required maxlength="30" placeholder="Ej. Carlos">
+      </label>
+      <label class="field">
+        <span class="field-label">Apellido del rival</span>
+        <input type="text" id="opp-last-name" required maxlength="30" placeholder="Ej. Díaz">
+      </label>
+
       <button type="submit" class="btn-primary" id="register-btn">
         <span>Reportarse a bordo</span>
         <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -47,48 +58,78 @@
   </div>
 </section>
 
-<!-- ============ 2. SALA DE ESPERA ============ -->
+<!-- ============ 2. ESPERANDO AL RIVAL ============ -->
 <section id="screen-waiting" class="screen center-screen hidden">
   <div class="panel-card">
     <div class="pulse-dot" aria-hidden="true"></div>
-    <p class="eyebrow">En cola</p>
-    <h2 class="title title--sm">ESPERANDO TU TURNO</h2>
-    <p class="subtitle" id="waiting-copy">Otro comandante está en el sonar. Serás notificado apenas termine su misión.</p>
-    <p class="waiting-name" id="waiting-name">&mdash;</p>
+    <p class="eyebrow">Esperando conexión</p>
+    <h2 class="title title--sm">ESPERANDO A TU RIVAL</h2>
+    <p class="subtitle">Pídele que abra esta misma app y se registre con tu nombre como rival.</p>
+    <p class="waiting-name" id="waiting-opponent-name">&mdash;</p>
   </div>
 </section>
 
-<!-- ============ 3. TABLERO / JUEGO ============ -->
+<!-- ============ 3. PARTIDA ============ -->
 <section id="screen-game" class="screen game-screen hidden">
   <header class="game-header">
-    <div class="header-left">
-      <span class="rank-tag">COMANDANTE</span>
-      <h2 id="header-name" class="header-name">&mdash;</h2>
-      <span class="grade-pill" id="header-grade">&mdash;</span>
+    <div class="vs-row">
+      <div class="vs-side">
+        <span class="rank-tag">TÚ</span>
+        <h2 class="header-name" id="me-name">&mdash;</h2>
+        <span class="score-tag" id="me-points">0 pts</span>
+      </div>
+      <span class="vs-divider">VS</span>
+      <div class="vs-side">
+        <span class="rank-tag">RIVAL</span>
+        <h2 class="header-name" id="opp-name">&mdash;</h2>
+        <span class="score-tag" id="opp-points">0 pts</span>
+      </div>
     </div>
-    <div class="header-right">
-      <div class="timer-box">
-        <span class="timer-label">Tiempo</span>
-        <span class="timer-value" id="timer-value">10:00</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-label">Puntos</span>
-        <span class="stat-value" id="points-value">0</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-label">Aciertos</span>
-        <span class="stat-value" id="hits-value">0</span>
-      </div>
+    <div class="meta-row">
+      <span class="grade-pill" id="stopwatch">00:00</span>
+      <span class="grade-pill" id="turn-counter">Turno 1</span>
+      <button class="btn-finish" id="finish-btn">Finalizar partida</button>
     </div>
   </header>
 
-  <p class="board-hint">Selecciona una coordenada para disparar</p>
+  <div class="turn-banner" id="turn-banner">Turno de &mdash;</div>
 
-  <div class="board-wrap">
-    <div class="board-cols" id="board-cols" aria-hidden="true"></div>
-    <div class="board-rows-and-grid">
-      <div class="board-rows" id="board-rows" aria-hidden="true"></div>
-      <div class="board-grid" id="board-grid"></div>
+  <div class="draw-zone" id="draw-zone">
+    <button class="btn-draw" id="draw-btn">🎲 Sacar tarjeta</button>
+    <p class="draw-hint">Resuelve en tu hoja de papel, luego ingresa tu respuesta aquí</p>
+  </div>
+
+  <!-- Tarjeta de ecuación -->
+  <div class="card-zone hidden" id="equation-zone">
+    <div class="mesa-card">
+      <span class="face-tag">Desafío matemático</span>
+      <div class="equation" id="equation-text">x + 3 = 1</div>
+      <div class="answer-row">
+        <input type="text" id="answer-input" placeholder="Valor de x" inputmode="numeric" autocomplete="off">
+        <button class="btn-primary btn-verify" id="verify-btn">Verificar</button>
+      </div>
+      <p id="verify-feedback" class="verify-feedback hidden"></p>
+    </div>
+  </div>
+
+  <!-- Confirmación de impacto (¿tocado?) -->
+  <div class="card-zone hidden" id="hit-zone">
+    <div class="mesa-card mesa-card--amber">
+      <span class="face-tag face-tag--back" id="hit-coordinate">Coordenada &mdash;</span>
+      <p class="mesa-instruction">Canta tu disparo en la mesa. ¿Qué respondió tu rival?</p>
+      <div class="modal-actions">
+        <button class="btn-modal btn-modal--yes" id="btn-hit-yes">¡Tocado!</button>
+        <button class="btn-modal btn-modal--no" id="btn-hit-no">Agua</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjeta de evento especial -->
+  <div class="card-zone hidden" id="event-zone">
+    <div class="mesa-card mesa-card--event">
+      <span class="face-tag face-tag--event" id="event-title">Evento especial</span>
+      <p class="event-description" id="event-description">&mdash;</p>
+      <button class="btn-primary" id="event-continue-btn">Continuar</button>
     </div>
   </div>
 </section>
@@ -96,49 +137,33 @@
 <!-- ============ 4. RESULTADOS ============ -->
 <section id="screen-results" class="screen center-screen hidden">
   <div class="panel-card">
-    <div class="panel-badge">🏁</div>
+    <div class="panel-badge" id="results-badge">🏁</div>
     <p class="eyebrow">Misión finalizada</p>
-    <h2 class="title title--sm" id="results-name">&mdash;</h2>
+    <h2 class="title title--sm" id="results-headline">&mdash;</h2>
     <div class="results-grid">
       <div class="result-stat">
-        <span class="result-value" id="results-points">0</span>
-        <span class="result-label">Puntos</span>
+        <span class="result-value" id="results-my-points">0</span>
+        <span class="result-label">Tus puntos</span>
       </div>
       <div class="result-stat">
-        <span class="result-value" id="results-hits">0</span>
-        <span class="result-label">Aciertos</span>
-      </div>
-      <div class="result-stat">
-        <span class="result-value" id="results-shots">0</span>
-        <span class="result-label">Disparos</span>
-      </div>
-      <div class="result-stat">
-        <span class="result-value" id="results-position">&mdash;</span>
-        <span class="result-label">Posición</span>
+        <span class="result-value" id="results-opp-points">0</span>
+        <span class="result-label">Puntos del rival</span>
       </div>
     </div>
-    <p class="subtitle">Gracias por tu misión, comandante. ¡Consulta el ranking general con los organizadores!</p>
+    <p class="subtitle">El resultado ya quedó registrado para los organizadores.</p>
   </div>
 </section>
 
-<!-- ============ MODAL: ¿ACERTÓ? ============ -->
-<div id="modal-hit" class="modal-overlay hidden">
+<!-- ============ MODAL: CONFIRMAR FIN DE PARTIDA ============ -->
+<div id="modal-finish" class="modal-overlay hidden">
   <div class="modal-box">
-    <p class="modal-eyebrow" id="modal-coordinate">Coordenada &mdash;</p>
-    <h3 class="modal-title">¿El disparo acertó?</h3>
-    <div class="modal-actions">
-      <button class="btn-modal btn-modal--yes" id="btn-hit-yes">Sí</button>
-      <button class="btn-modal btn-modal--no" id="btn-hit-no">No</button>
+    <p class="modal-eyebrow">Determinado por el tablero físico</p>
+    <h3 class="modal-title">¿Quién ganó la partida?</h3>
+    <div class="modal-actions modal-actions--col">
+      <button class="btn-modal btn-modal--yes" id="btn-winner-me">Gané yo (<span id="winner-me-label"></span>)</button>
+      <button class="btn-modal btn-modal--yes" id="btn-winner-opp">Ganó mi rival (<span id="winner-opp-label"></span>)</button>
+      <button class="btn-modal btn-modal--no" id="btn-winner-tie">Empate</button>
     </div>
-  </div>
-</div>
-
-<!-- ============ MODAL: RANGO ============ -->
-<div id="modal-range" class="modal-overlay hidden">
-  <div class="modal-box modal-box--wide">
-    <p class="modal-eyebrow">Impacto confirmado</p>
-    <h3 class="modal-title">Seleccione el rango obtenido</h3>
-    <div class="range-grid" id="range-grid"></div>
   </div>
 </div>
 
