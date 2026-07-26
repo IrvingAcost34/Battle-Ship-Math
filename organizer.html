@@ -24,18 +24,18 @@
     <span class="live-badge"><span class="live-dot"></span> En vivo</span>
   </header>
 
-  <section class="org-current">
-    <div class="org-current-card">
-      <span class="field-label">Jugando ahora</span>
-      <p class="org-current-name" id="current-player-name">&mdash;</p>
+  <section class="org-summary">
+    <div class="org-summary-card">
+      <span class="org-summary-value" id="summary-playing">0</span>
+      <span class="org-summary-label">Partidas en curso</span>
     </div>
-    <div class="org-current-card">
-      <span class="field-label">Próximo en la fila</span>
-      <p class="org-current-name" id="next-player-name">&mdash;</p>
+    <div class="org-summary-card">
+      <span class="org-summary-value" id="summary-waiting">0</span>
+      <span class="org-summary-label">Esperando rival</span>
     </div>
-    <div class="org-current-card">
-      <span class="field-label">Tiempo restante</span>
-      <p class="org-current-name org-current-name--mono" id="org-timer">&mdash;</p>
+    <div class="org-summary-card">
+      <span class="org-summary-value" id="summary-finished">0</span>
+      <span class="org-summary-label">Finalizadas</span>
     </div>
   </section>
 
@@ -43,13 +43,12 @@
     <table class="org-table">
       <thead>
         <tr>
-          <th>Pos.</th>
-          <th>Nombre</th>
-          <th>Apellido</th>
+          <th>Jugador</th>
           <th>Grado</th>
+          <th>Rival</th>
           <th>Puntos</th>
-          <th>Disparos</th>
-          <th>Aciertos</th>
+          <th>Resultado</th>
+          <th>Turno</th>
           <th>Inicio</th>
           <th>Fin</th>
           <th>Duración</th>
@@ -57,7 +56,7 @@
         </tr>
       </thead>
       <tbody id="org-table-body">
-        <tr><td colspan="11" class="org-empty">Esperando partidas&hellip;</td></tr>
+        <tr><td colspan="10" class="org-empty">Esperando partidas&hellip;</td></tr>
       </tbody>
     </table>
   </section>
