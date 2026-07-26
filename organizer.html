@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batalla Naval · Panel de Organizadores</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="body--org">
+
+<div class="radar-bg" aria-hidden="true">
+  <div class="radar-ring r1"></div>
+  <div class="radar-ring r2"></div>
+  <div class="radar-ring r3"></div>
+  <div class="radar-grid"></div>
+</div>
+
+<div class="org-wrap">
+  <header class="org-header">
+    <div>
+      <p class="eyebrow">Panel exclusivo &mdash; No compartir con jugadores</p>
+      <h1 class="title title--sm">CENTRO DE MANDO</h1>
+    </div>
+    <span class="live-badge"><span class="live-dot"></span> En vivo</span>
+  </header>
+
+  <section class="org-current">
+    <div class="org-current-card">
+      <span class="field-label">Jugando ahora</span>
+      <p class="org-current-name" id="current-player-name">&mdash;</p>
+    </div>
+    <div class="org-current-card">
+      <span class="field-label">Próximo en la fila</span>
+      <p class="org-current-name" id="next-player-name">&mdash;</p>
+    </div>
+    <div class="org-current-card">
+      <span class="field-label">Tiempo restante</span>
+      <p class="org-current-name org-current-name--mono" id="org-timer">&mdash;</p>
+    </div>
+  </section>
+
+  <section class="org-table-wrap">
+    <table class="org-table">
+      <thead>
+        <tr>
+          <th>Pos.</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Grado</th>
+          <th>Puntos</th>
+          <th>Disparos</th>
+          <th>Aciertos</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Duración</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="org-table-body">
+        <tr><td colspan="11" class="org-empty">Esperando partidas&hellip;</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="organizer.js"></script>
+</body>
+</html>
