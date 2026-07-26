@@ -1,1 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batalla Naval · Sala de Operaciones</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
+<div class="radar-bg" aria-hidden="true">
+  <div class="radar-ring r1"></div>
+  <div class="radar-ring r2"></div>
+  <div class="radar-ring r3"></div>
+  <div class="radar-sweep"></div>
+  <div class="radar-grid"></div>
+</div>
+
+<!-- ============ 1. REGISTRO ============ -->
+<section id="screen-register" class="screen center-screen">
+  <div class="panel-card">
+    <div class="panel-badge">⚓</div>
+    <p class="eyebrow">Comando de Flota &mdash; Sala de Operaciones</p>
+    <h1 class="title">BATALLA<span>NAVAL</span></h1>
+    <p class="subtitle">Regístrate para tomar el mando del sonar</p>
+
+    <form id="register-form" class="form" autocomplete="off">
+      <label class="field">
+        <span class="field-label">Nombre</span>
+        <input type="text" id="first-name" required maxlength="30" placeholder="Ej. Sofía">
+      </label>
+      <label class="field">
+        <span class="field-label">Apellido</span>
+        <input type="text" id="last-name" required maxlength="30" placeholder="Ej. Herrera">
+      </label>
+      <label class="field">
+        <span class="field-label">Grado</span>
+        <input type="text" id="grade" required maxlength="10" placeholder="Ej. 8-P">
+      </label>
+
+      <button type="submit" class="btn-primary" id="register-btn">
+        <span>Reportarse a bordo</span>
+        <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p id="register-error" class="error-text hidden"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ 2. SALA DE ESPERA ============ -->
+<section id="screen-waiting" class="screen center-screen hidden">
+  <div class="panel-card">
+    <div class="pulse-dot" aria-hidden="true"></div>
+    <p class="eyebrow">En cola</p>
+    <h2 class="title title--sm">ESPERANDO TU TURNO</h2>
+    <p class="subtitle" id="waiting-copy">Otro comandante está en el sonar. Serás notificado apenas termine su misión.</p>
+    <p class="waiting-name" id="waiting-name">&mdash;</p>
+  </div>
+</section>
+
+<!-- ============ 3. TABLERO / JUEGO ============ -->
+<section id="screen-game" class="screen game-screen hidden">
+  <header class="game-header">
+    <div class="header-left">
+      <span class="rank-tag">COMANDANTE</span>
+      <h2 id="header-name" class="header-name">&mdash;</h2>
+      <span class="grade-pill" id="header-grade">&mdash;</span>
+    </div>
+    <div class="header-right">
+      <div class="timer-box">
+        <span class="timer-label">Tiempo</span>
+        <span class="timer-value" id="timer-value">10:00</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Puntos</span>
+        <span class="stat-value" id="points-value">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Aciertos</span>
+        <span class="stat-value" id="hits-value">0</span>
+      </div>
+    </div>
+  </header>
+
+  <p class="board-hint">Selecciona una coordenada para disparar</p>
+
+  <div class="board-wrap">
+    <div class="board-cols" id="board-cols" aria-hidden="true"></div>
+    <div class="board-rows-and-grid">
+      <div class="board-rows" id="board-rows" aria-hidden="true"></div>
+      <div class="board-grid" id="board-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. RESULTADOS ============ -->
+<section id="screen-results" class="screen center-screen hidden">
+  <div class="panel-card">
+    <div class="panel-badge">🏁</div>
+    <p class="eyebrow">Misión finalizada</p>
+    <h2 class="title title--sm" id="results-name">&mdash;</h2>
+    <div class="results-grid">
+      <div class="result-stat">
+        <span class="result-value" id="results-points">0</span>
+        <span class="result-label">Puntos</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-value" id="results-hits">0</span>
+        <span class="result-label">Aciertos</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-value" id="results-shots">0</span>
+        <span class="result-label">Disparos</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-value" id="results-position">&mdash;</span>
+        <span class="result-label">Posición</span>
+      </div>
+    </div>
+    <p class="subtitle">Gracias por tu misión, comandante. ¡Consulta el ranking general con los organizadores!</p>
+  </div>
+</section>
+
+<!-- ============ MODAL: ¿ACERTÓ? ============ -->
+<div id="modal-hit" class="modal-overlay hidden">
+  <div class="modal-box">
+    <p class="modal-eyebrow" id="modal-coordinate">Coordenada &mdash;</p>
+    <h3 class="modal-title">¿El disparo acertó?</h3>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal--yes" id="btn-hit-yes">Sí</button>
+      <button class="btn-modal btn-modal--no" id="btn-hit-no">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: RANGO ============ -->
+<div id="modal-range" class="modal-overlay hidden">
+  <div class="modal-box modal-box--wide">
+    <p class="modal-eyebrow">Impacto confirmado</p>
+    <h3 class="modal-title">Seleccione el rango obtenido</h3>
+    <div class="range-grid" id="range-grid"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
