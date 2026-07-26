@@ -119,5 +119,35 @@ function renderTable() {
   tbody.innerHTML = html;
 }
 
+// ---------------------------------------------------------
+// FINALIZAR EVENTO (cierra todas las partidas activas)
+// ---------------------------------------------------------
+const forceEndModal = document.getElementById('modal-force-end');
+
+document.getElementById('force-end-btn').addEventListener('click', () => {
+  forceEndModal.classList.remove('hidden');
+});
+document.getElementById('cancel-force-end').addEventListener('click', () => {
+  forceEndModal.classList.add('hidden');
+});
+document.getElementById('confirm-force-end').addEventListener('click', async () => {
+  forceEndModal.classList.add('hidden');
+  try {
+    const { data, error } = await window.supabaseClient.rpc('force_end_all_matches');
+    if (error) throw error;
+    showToast(`Evento finalizado — se cerraron ${data.closed_matches} partida(s).`);
+  } catch (err) {
+    console.error(err);
+    showToast('Ocurrió un error al finalizar el evento.');
+  }
+});
+
+function showToast(message) {
+  const toast = document.getElementById('force-end-toast');
+  toast.textContent = message;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 6000);
+}
+
 loadInitialData();
 subscribeRealtime();
