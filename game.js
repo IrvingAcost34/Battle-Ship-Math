@@ -139,7 +139,11 @@ function subscribeToMatch() {
           return;
         }
         if (row.status === 'finished') {
-          showResults(row);
+          if (row.force_ended) {
+            resetToRegister();
+          } else {
+            showResults(row);
+          }
           return;
         }
         syncUI(row);
@@ -398,4 +402,42 @@ function showResults(row) {
   document.getElementById('results-opp-points').textContent = oppPoints;
 
   showScreen('results');
+}
+
+// ---------------------------------------------------------
+// CIERRE FORZADO POR EL ORGANIZADOR
+// ---------------------------------------------------------
+function showToast(message) {
+  const toast = document.getElementById('force-end-toast');
+  if (message) toast.textContent = message;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 5000);
+}
+
+function resetToRegister() {
+  clearInterval(state.stopwatchInterval);
+  if (state.channel) {
+    window.supabaseClient.removeChannel(state.channel);
+  }
+
+  state = {
+    playerId: null,
+    matchId: null,
+    isPlayer1: null,
+    myName: '', myGrade: '',
+    oppId: null, oppName: '', oppGrade: '',
+    matchRow: null,
+    channel: null,
+    stopwatchInterval: null,
+    currentEquationAnswer: null,
+    eventShotsRemaining: 0,
+    eventShotsTotal: 0,
+    eventPointsAccum: 0,
+    eventTitle: '',
+  };
+
+  document.getElementById('register-form').reset();
+  document.getElementById('register-btn').disabled = false;
+  showScreen('register');
+  showToast();
 }
