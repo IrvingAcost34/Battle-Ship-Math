@@ -21,7 +21,10 @@
       <p class="eyebrow">Panel exclusivo &mdash; No compartir con jugadores</p>
       <h1 class="title title--sm">CENTRO DE MANDO</h1>
     </div>
-    <span class="live-badge"><span class="live-dot"></span> En vivo</span>
+    <div class="org-header-actions">
+      <span class="live-badge"><span class="live-dot"></span> En vivo</span>
+      <button class="btn-finish btn-finish--org" id="force-end-btn">⏱️ Finalizar evento</button>
+    </div>
   </header>
 
   <section class="org-summary">
@@ -60,6 +63,20 @@
       </tbody>
     </table>
   </section>
+</div>
+
+<div id="force-end-toast" class="toast hidden"></div>
+
+<div id="modal-force-end" class="modal-overlay hidden">
+  <div class="modal-box">
+    <p class="modal-eyebrow">Acción irreversible</p>
+    <h3 class="modal-title">¿Finalizar el evento ahora?</h3>
+    <p class="subtitle">Todas las partidas en curso o esperando rival se cerrarán de inmediato. Los jugadores volverán a la pantalla de inicio.</p>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal--yes" id="confirm-force-end">Sí, finalizar</button>
+      <button class="btn-modal btn-modal--no" id="cancel-force-end">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
