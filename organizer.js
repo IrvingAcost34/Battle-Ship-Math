@@ -1,30 +1,20 @@
 // =========================================================
-// BATALLA NAVAL — Panel de organizadores (tiempo real)
+// BATALLA NAVAL — Panel de organizadores (partidas 1 vs 1)
 // =========================================================
 
-const GAME_SECONDS = 600;
+const players = new Map(); // id -> {first_name, last_name, grade}
+const matches = new Map(); // id -> match row
 
-const players = new Map();     // id -> {first_name, last_name, grade}
-const games = new Map();       // id -> game row
-const leaderboard = new Map(); // player_id -> position
-
-let settings = { current_player: null, next_player: null, game_running: false };
-let clockInterval = null;
-
-const statusLabel = { waiting: 'Esperando', playing: 'Jugando', finished: 'Finalizado' };
+const statusLabel = { waiting: 'Esperando rival', playing: 'Jugando', finished: 'Finalizado' };
 
 async function loadInitialData() {
-  const [{ data: p }, { data: g }, { data: lb }, { data: s }] = await Promise.all([
+  const [{ data: p }, { data: m }] = await Promise.all([
     window.supabaseClient.from('players').select('*'),
-    window.supabaseClient.from('games').select('*'),
-    window.supabaseClient.from('leaderboard').select('*'),
-    window.supabaseClient.from('game_settings').select('*').eq('id', 1).single(),
+    window.supabaseClient.from('matches').select('*'),
   ]);
 
   (p || []).forEach(row => players.set(row.id, row));
-  (g || []).forEach(row => games.set(row.id, row));
-  (lb || []).forEach(row => leaderboard.set(row.player_id, row.position));
-  if (s) settings = s;
+  (m || []).forEach(row => matches.set(row.id, row));
 
   render();
 }
@@ -37,26 +27,21 @@ function subscribeRealtime() {
       else players.set(payload.new.id, payload.new);
       render();
     })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, (payload) => {
-      if (payload.eventType === 'DELETE') games.delete(payload.old.id);
-      else games.set(payload.new.id, payload.new);
-      render();
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' }, (payload) => {
-      if (payload.eventType === 'DELETE') leaderboard.delete(payload.old.player_id);
-      else leaderboard.set(payload.new.player_id, payload.new.position);
-      render();
-    })
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_settings', filter: 'id=eq.1' }, (payload) => {
-      settings = payload.new;
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, (payload) => {
+      if (payload.eventType === 'DELETE') matches.delete(payload.old.id);
+      else matches.set(payload.new.id, payload.new);
       render();
     })
     .subscribe();
 }
 
-function playerName(id) {
+function playerLabel(id) {
   const p = players.get(id);
-  return p ? `${p.first_name} ${p.last_name} (${p.grade})` : '—';
+  return p ? `${p.first_name} ${p.last_name}` : '—';
+}
+function playerGrade(id) {
+  const p = players.get(id);
+  return p ? p.grade : '—';
 }
 
 function fmtTime(iso) {
@@ -64,72 +49,74 @@ function fmtTime(iso) {
   return new Date(iso).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-function fmtDuration(seconds) {
-  if (seconds === null || seconds === undefined) return '—';
+function fmtDuration(startIso, endIso) {
+  if (!startIso || !endIso) return '—';
+  const seconds = Math.max(0, Math.floor((new Date(endIso) - new Date(startIso)) / 1000));
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
   return `${mm}:${ss}`;
 }
 
-function render() {
-  document.getElementById('current-player-name').textContent = settings.current_player ? playerName(settings.current_player) : '— Nadie —';
-  document.getElementById('next-player-name').textContent = settings.next_player ? playerName(settings.next_player) : '— Nadie —';
+function resultFor(match, playerId) {
+  if (match.status !== 'finished') {
+    return match.status === 'playing'
+      ? '<span class="result-pill result-pill--live">En curso</span>'
+      : '<span class="result-pill result-pill--tie">—</span>';
+  }
+  if (!match.winner_id) return '<span class="result-pill result-pill--tie">Empató</span>';
+  return match.winner_id === playerId
+    ? '<span class="result-pill result-pill--win">Ganó</span>'
+    : '<span class="result-pill result-pill--lose">Perdió</span>';
+}
 
+function render() {
+  renderSummary();
   renderTable();
-  renderClock();
+}
+
+function renderSummary() {
+  const rows = Array.from(matches.values());
+  document.getElementById('summary-playing').textContent = rows.filter(m => m.status === 'playing').length;
+  document.getElementById('summary-waiting').textContent = rows.filter(m => m.status === 'waiting').length;
+  document.getElementById('summary-finished').textContent = rows.filter(m => m.status === 'finished').length;
 }
 
 function renderTable() {
   const tbody = document.getElementById('org-table-body');
-  const rows = Array.from(games.values());
+  const rows = Array.from(matches.values()).filter(m => m.player2_id); // solo partidas ya emparejadas
 
   if (rows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" class="org-empty">Esperando partidas&hellip;</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="org-empty">Esperando partidas&hellip;</td></tr>';
     return;
   }
 
-  rows.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+  rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  tbody.innerHTML = rows.map(g => {
-    const p = players.get(g.player_id) || {};
-    const pos = leaderboard.get(g.player_id);
-    return `
-      <tr>
-        <td>${pos ? '#' + pos : '—'}</td>
-        <td>${p.first_name || '—'}</td>
-        <td>${p.last_name || '—'}</td>
-        <td>${p.grade || '—'}</td>
-        <td>${g.total_points || 0}</td>
-        <td>${g.total_shots || 0}</td>
-        <td>${g.total_hits || 0}</td>
-        <td>${fmtTime(g.start_time)}</td>
-        <td>${fmtTime(g.end_time)}</td>
-        <td>${fmtDuration(g.game_duration)}</td>
-        <td><span class="status-pill status-pill--${g.status}">${statusLabel[g.status] || g.status}</span></td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderClock() {
-  const playingGame = Array.from(games.values()).find(g => g.status === 'playing');
-  const timerEl = document.getElementById('org-timer');
-
-  clearInterval(clockInterval);
-
-  if (!playingGame || !playingGame.start_time) {
-    timerEl.textContent = '—';
-    return;
-  }
-
-  const update = () => {
-    const elapsed = Math.floor((Date.now() - new Date(playingGame.start_time).getTime()) / 1000);
-    const remaining = Math.max(0, GAME_SECONDS - elapsed);
-    timerEl.textContent = fmtDuration(remaining);
-  };
-
-  update();
-  clockInterval = setInterval(update, 1000);
+  let html = '';
+  rows.forEach(m => {
+    const pairs = [
+      { id: m.player1_id, opp: m.player2_id, points: m.player1_points },
+      { id: m.player2_id, opp: m.player1_id, points: m.player2_points },
+    ];
+    pairs.forEach((row, i) => {
+      const isTurnPlayer = m.current_turn_player_id === row.id && m.status === 'playing';
+      html += `
+        <tr class="${i === 1 ? 'org-row-pair-end' : ''}">
+          <td>${playerLabel(row.id)}${isTurnPlayer ? ' 🎯' : ''}</td>
+          <td>${playerGrade(row.id)}</td>
+          <td>${playerLabel(row.opp)}</td>
+          <td>${row.points || 0}</td>
+          <td>${resultFor(m, row.id)}</td>
+          <td>${m.turn_number || 1}</td>
+          <td>${fmtTime(m.start_time)}</td>
+          <td>${fmtTime(m.end_time)}</td>
+          <td>${fmtDuration(m.start_time, m.end_time)}</td>
+          <td><span class="status-pill status-pill--${m.status}">${statusLabel[m.status] || m.status}</span></td>
+        </tr>
+      `;
+    });
+  });
+  tbody.innerHTML = html;
 }
 
 loadInitialData();
