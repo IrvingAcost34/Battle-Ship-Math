@@ -42,6 +42,37 @@
     </div>
   </section>
 
+  <section class="org-ranking-wrap">
+    <div class="org-ranking-header">
+      <h2 class="title title--sm">🏆 RANKING GENERAL</h2>
+      <label class="ranking-filter">
+        <span class="field-label">Filtrar por grado</span>
+        <select id="grade-filter">
+          <option value="">Todos los grados</option>
+        </select>
+      </label>
+    </div>
+    <table class="org-table">
+      <thead>
+        <tr>
+          <th>Pos.</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Grado</th>
+          <th>Partidas</th>
+          <th>Ganadas</th>
+          <th>Perdidas</th>
+          <th>Empatadas</th>
+          <th>Puntos totales</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-table-body">
+        <tr><td colspan="9" class="org-empty">Aún no hay jugadores registrados&hellip;</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <h2 class="title title--sm org-section-title">📋 PARTIDAS</h2>
   <section class="org-table-wrap">
     <table class="org-table">
       <thead>
