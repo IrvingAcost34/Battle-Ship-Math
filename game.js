@@ -3,18 +3,48 @@
 // =========================================================
 
 const EQUATION_DECK = [
-  { eq: "x + 5 = 2",  ans: "-3" },
-  { eq: "2x = 10",    ans: "5" },
-  { eq: "x - 4 = -8", ans: "-4" },
-  { eq: "3x + 1 = 7", ans: "2" },
-  { eq: "x / 2 = -6", ans: "-12" },
-  { eq: "-x = 9",     ans: "-9" },
-  { eq: "x + 10 = 13",ans: "3" },
-  { eq: "5 - x = 8",  ans: "-3" },
-  { eq: "2x - 3 = 11",ans: "7" },
-  { eq: "x / 3 = -2", ans: "-6" },
-  { eq: "x + 7 = 0",  ans: "-7" },
-  { eq: "4x = -16",   ans: "-4" },
+  // --- NIVEL FÁCIL (Ecuaciones de 1 paso) ---
+  { eq: "x + 5 = 2",    ans: "-3", difficulty: "facil" },
+  { eq: "2x = 10",      ans: "5",  difficulty: "facil" },
+  { eq: "x - 4 = -8",   ans: "-4", difficulty: "facil" },
+  { eq: "x / 2 = -6",   ans: "-12",difficulty: "facil" },
+  { eq: "-x = 9",       ans: "-9", difficulty: "facil" },
+  { eq: "x + 10 = 13",  ans: "3",  difficulty: "facil" },
+  { eq: "x / 3 = -2",   ans: "-6", difficulty: "facil" },
+  { eq: "x + 7 = 0",    ans: "-7", difficulty: "facil" },
+  { eq: "4x = -16",     ans: "-4", difficulty: "facil" },
+  { eq: "x - 9 = 2",    ans: "11", difficulty: "facil" },
+  { eq: "x + 12 = 1",   ans: "-11",difficulty: "facil" },
+  { eq: "-3x = 21",     ans: "-7", difficulty: "facil" },
+  { eq: "x - 6 = -13",  ans: "-7", difficulty: "facil" },
+  { eq: "5x = -35",     ans: "-7", difficulty: "facil" },
+  { eq: "x + 8 = 1",    ans: "-7", difficulty: "facil" },
+  // --- NIVEL MEDIO (Ecuaciones de 2 pasos) ---
+  { eq: "3x + 1 = 7",   ans: "2",  difficulty: "medio" },
+  { eq: "5 - x = 8",    ans: "-3", difficulty: "medio" },
+  { eq: "2x - 3 = 11",  ans: "7",  difficulty: "medio" },
+  { eq: "3x + 5 = -4",  ans: "-3", difficulty: "medio" },
+  { eq: "4x - 2 = 10",  ans: "3",  difficulty: "medio" },
+  { eq: "-2x + 1 = 9",  ans: "-4", difficulty: "medio" },
+  { eq: "2x + 15 = 1",  ans: "-7", difficulty: "medio" },
+  { eq: "5x - 4 = -19", ans: "-3", difficulty: "medio" },
+  { eq: "-3x - 5 = 10", ans: "-5", difficulty: "medio" },
+  { eq: "6x + 8 = -4",  ans: "-2", difficulty: "medio" },
+  { eq: "10 - 2x = 16", ans: "-3", difficulty: "medio" },
+  { eq: "4x + 13 = 1",  ans: "-3", difficulty: "medio" },
+  { eq: "7 - 3x = 22",  ans: "-5", difficulty: "medio" },
+  { eq: "-5x + 3 = 28", ans: "-5", difficulty: "medio" },
+  // --- NIVEL DIFÍCIL (Con paréntesis o x en ambos lados) ---
+  { eq: "2(x + 3) = 10",    ans: "2",  difficulty: "dificil" },
+  { eq: "3(x - 2) = -15",   ans: "-3", difficulty: "dificil" },
+  { eq: "5x = 2x + 12",     ans: "4",  difficulty: "dificil" },
+  { eq: "4x - 5 = 2x + 7",  ans: "6",  difficulty: "dificil" },
+  { eq: "2(x - 4) = -12",   ans: "-2", difficulty: "dificil" },
+  { eq: "-3(x + 1) = 18",   ans: "-7", difficulty: "dificil" },
+  { eq: "7x + 2 = 3x - 10", ans: "-3", difficulty: "dificil" },
+  { eq: "2(3 - x) = 14",    ans: "-4", difficulty: "dificil" },
+  { eq: "5(x + 2) = -5",    ans: "-3", difficulty: "dificil" },
+  { eq: "3x - 8 = 5x + 2",  ans: "-5", difficulty: "dificil" }
 ];
 
 const EVENT_CARDS = [
@@ -23,6 +53,9 @@ const EVENT_CARDS = [
 ];
 
 const EVENT_CHANCE = 0.25; // 25% de probabilidad de tarjeta de evento
+
+const DIFFICULTY_POINTS = { facil: 1, medio: 2, dificil: 3 };
+const DIFFICULTY_LABEL  = { facil: 'Fácil · 1 pt', medio: 'Medio · 2 pts', dificil: 'Difícil · 3 pts' };
 
 let state = {
   playerId: null,
@@ -208,7 +241,9 @@ document.getElementById('draw-btn').addEventListener('click', () => {
 function drawEquationCard() {
   const card = EQUATION_DECK[Math.floor(Math.random() * EQUATION_DECK.length)];
   state.currentEquationAnswer = card.ans;
+  state.currentEquationPoints = DIFFICULTY_POINTS[card.difficulty] || 1;
   document.getElementById('equation-text').textContent = card.eq;
+  document.getElementById('equation-difficulty').textContent = DIFFICULTY_LABEL[card.difficulty] || '';
   document.getElementById('answer-input').value = '';
   document.getElementById('answer-input').disabled = false;
   document.getElementById('verify-btn').disabled = false;
@@ -305,7 +340,7 @@ async function handleHitResponse(wasHit) {
     answeredCorrectly: true,
     coordinate: `X = ${state.currentEquationAnswer}`,
     hit: wasHit,
-    points: wasHit ? 1 : 0,
+    points: wasHit ? state.currentEquationPoints : 0,
   });
   resetToDraw();
 }
