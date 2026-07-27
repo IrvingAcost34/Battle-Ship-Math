@@ -50,6 +50,7 @@ body.body--org { align-items: flex-start; }
 .title span { display: block; color: var(--amber); font-size: 0.95em; }
 .title--sm { font-size: 1.4rem; letter-spacing: 1.5px; }
 .subtitle { font-size: 0.82rem; color: var(--ink-dim); margin: 0 0 26px; line-height: 1.5; }
+.hint-note { font-size: 0.72rem; color: var(--amber); background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.3); border-radius: 10px; padding: 10px 12px; margin: -14px 0 22px; text-align: left; line-height: 1.4; }
 
 /* Formulario de registro */
 .form { display: flex; flex-direction: column; gap: 14px; text-align: left; }
@@ -140,6 +141,7 @@ body.body--org { align-items: flex-start; }
 .result-stat { border: 1px solid var(--line); border-radius: 12px; padding: 14px 10px; background: rgba(52,226,196,0.04); }
 .result-value { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--sonar); }
 .result-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-dim); }
+.result-stat--wide { margin: -8px 0 22px; border-color: var(--sonar-dim); background: rgba(52,226,196,0.08); }
 
 /* Panel de organizadores */
 .org-wrap { position: relative; z-index: 1; width: min(1100px, 96vw); margin: 30px auto; }
@@ -154,6 +156,17 @@ body.body--org { align-items: flex-start; }
 .org-summary-card { background: linear-gradient(180deg, var(--panel) 0%, var(--deep-2) 100%); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; text-align: center; }
 .org-summary-value { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--amber); }
 .org-summary-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-dim); }
+
+.org-ranking-wrap { background: linear-gradient(180deg, var(--panel) 0%, var(--deep-2) 100%); border: 1px solid var(--sonar-dim); border-radius: 16px; overflow-x: auto; margin-bottom: 24px; padding-bottom: 4px; }
+.org-ranking-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 18px 8px; }
+.org-ranking-header .title--sm { margin: 0; }
+.ranking-filter { display: flex; flex-direction: column; gap: 4px; min-width: 180px; }
+.ranking-filter select { font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink); background: rgba(6,18,36,0.7); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.org-section-title { margin: 0 0 14px; }
+.ranking-pos { font-family: var(--font-display); font-weight: 700; color: var(--amber); }
+.ranking-pos--top1 { color: #ffd54a; }
+.ranking-pos--top2 { color: #d9d9e0; }
+.ranking-pos--top3 { color: #c9884a; }
 
 .org-table-wrap { background: linear-gradient(180deg, var(--panel) 0%, var(--deep-2) 100%); border: 1px solid var(--line); border-radius: 16px; overflow-x: auto; }
 .org-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 820px; }
