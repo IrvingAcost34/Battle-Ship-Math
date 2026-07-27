@@ -71,7 +71,66 @@ function resultFor(match, playerId) {
 
 function render() {
   renderSummary();
+  renderRanking();
   renderTable();
+}
+
+// ---------------------------------------------------------
+// RANKING GENERAL (con filtro por grado)
+// ---------------------------------------------------------
+let selectedGrade = '';
+let knownGrades = new Set();
+
+function refreshGradeFilterOptions() {
+  const current = new Set(Array.from(players.values()).map(p => p.grade).filter(Boolean));
+  const changed = current.size !== knownGrades.size || [...current].some(g => !knownGrades.has(g));
+  if (!changed) return;
+  knownGrades = current;
+
+  const select = document.getElementById('grade-filter');
+  const sorted = Array.from(current).sort();
+  select.innerHTML = '<option value="">Todos los grados</option>' +
+    sorted.map(g => `<option value="${g}">${g}</option>`).join('');
+  select.value = selectedGrade;
+}
+
+document.getElementById('grade-filter').addEventListener('change', (e) => {
+  selectedGrade = e.target.value;
+  renderRanking();
+});
+
+function renderRanking() {
+  refreshGradeFilterOptions();
+
+  const tbody = document.getElementById('ranking-table-body');
+  let rows = Array.from(players.values());
+  if (selectedGrade) rows = rows.filter(p => p.grade === selectedGrade);
+  rows = rows.filter(p => (p.matches_played || 0) > 0);
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="org-empty">Aún no hay partidas finalizadas&hellip;</td></tr>';
+    return;
+  }
+
+  rows.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+
+  tbody.innerHTML = rows.map((p, i) => {
+    const pos = i + 1;
+    const posClass = pos === 1 ? 'ranking-pos--top1' : pos === 2 ? 'ranking-pos--top2' : pos === 3 ? 'ranking-pos--top3' : '';
+    return `
+      <tr>
+        <td class="ranking-pos ${posClass}">#${pos}</td>
+        <td>${p.first_name}</td>
+        <td>${p.last_name}</td>
+        <td>${p.grade}</td>
+        <td>${p.matches_played || 0}</td>
+        <td>${p.wins || 0}</td>
+        <td>${p.losses || 0}</td>
+        <td>${p.ties || 0}</td>
+        <td>${p.total_points || 0}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function renderSummary() {
