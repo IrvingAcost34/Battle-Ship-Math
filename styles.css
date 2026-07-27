@@ -108,6 +108,7 @@ body.body--org { align-items: flex-start; }
 .face-tag { display: inline-block; font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 12px; }
 .face-tag--back { color: var(--amber); font-size: 1rem; letter-spacing: 0.5px; }
 .face-tag--event { color: var(--amber); font-size: 1.1rem; letter-spacing: 0.5px; }
+.difficulty-badge { display: inline-block; font-family: var(--font-display); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px; color: var(--amber); background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.35); border-radius: 999px; padding: 4px 12px; margin: -6px 0 14px; }
 
 .equation { font-family: var(--font-mono); font-weight: 700; font-size: 1.7rem; color: var(--ink); background: rgba(255,255,255,0.05); border: 1px solid var(--line); padding: 12px 22px; border-radius: 10px; margin-bottom: 18px; }
 
