@@ -402,6 +402,16 @@ function showResults(row) {
   document.getElementById('results-opp-points').textContent = oppPoints;
 
   showScreen('results');
+
+  // Traer el total acumulado de todas las partidas de este jugador
+  window.supabaseClient
+    .from('players')
+    .select('total_points')
+    .eq('id', state.playerId)
+    .single()
+    .then(({ data }) => {
+      document.getElementById('results-total-points').textContent = data ? data.total_points : myPoints;
+    });
 }
 
 // ---------------------------------------------------------
