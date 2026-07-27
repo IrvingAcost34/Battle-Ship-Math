@@ -48,8 +48,18 @@ const EQUATION_DECK = [
 ];
 
 const EVENT_CARDS = [
-  { id: 'bomba_racimo',   title: '💥 Bomba de Racimo',  description: '¡Tienes derecho a cantar 2 disparos seguidos en tu hoja de papel!', shots: 2 },
-  { id: 'torpedo_certero',title: '🎯 Torpedo Certero',   description: 'Disparo directo garantizado. ¡Canta un disparo sin resolver ecuación!', shots: 1 },
+  // --- POSITIVOS ---
+  { id: 'bomba_racimo',    title: '💥 Bomba de Racimo',     description: '¡Tienes derecho a cantar 2 disparos seguidos en tu hoja de papel!', type: 'shots', shots: 2 },
+  { id: 'torpedo_certero', title: '🎯 Torpedo Certero',      description: 'Disparo directo garantizado. ¡Canta un disparo sin resolver ecuación!', type: 'shots', shots: 1 },
+  { id: 'viento_popa',     title: '🌊 Viento en Popa',       description: 'Navegas a toda velocidad. ¡Dispara 2 veces seguidas en tu hoja!', type: 'shots', shots: 2 },
+  { id: 'municion_especial', title: '⚡ Munición Especial',  description: '¡Munición cargada! Tu próximo disparo, si acierta, vale el DOBLE de puntos.', type: 'shots', shots: 1, multiplier: 2 },
+  { id: 'aliado',          title: '🤝 Refuerzo Aliado',      description: 'Un barco aliado te presta su cañón. ¡Un disparo extra garantizado!', type: 'shots', shots: 1 },
+  { id: 'viento_favor',    title: '🌬️ Corriente a Favor',   description: 'Las corrientes marinas te empujan directo al blanco. ¡3 disparos seguidos!', type: 'shots', shots: 3 },
+  // --- NEGATIVOS ---
+  { id: 'fallo_canones',   title: '💨 Fallo en los Cañones', description: '¡Fallo mecánico! Pierdes el turno sin disparar. Buena suerte, vuelve a intentarlo en tu próxima ronda.', type: 'skip' },
+  { id: 'radar_danado',    title: '📡 Radar Dañado',         description: 'El radar se apagó justo a tiempo. Pierdes el turno sin poder disparar.', type: 'skip' },
+  { id: 'niebla_guerra',   title: '🌫️ Niebla de Guerra',    description: 'Una espesa niebla cubre el mar. No hay visibilidad para disparar este turno.', type: 'skip' },
+  { id: 'motin',           title: '⚓ Motín a Bordo',        description: '¡La tripulación se amotina! Pierdes el control de la nave por este turno.', type: 'skip' },
 ];
 
 const EVENT_CHANCE = 0.25; // 25% de probabilidad de tarjeta de evento
@@ -67,10 +77,13 @@ let state = {
   channel: null,
   stopwatchInterval: null,
   currentEquationAnswer: null,
+  currentEquationPoints: 1,
   eventShotsRemaining: 0,
   eventShotsTotal: 0,
   eventPointsAccum: 0,
   eventTitle: '',
+  eventType: null,
+  eventMultiplier: 1,
 };
 
 const screens = {
@@ -303,7 +316,7 @@ document.getElementById('btn-hit-no').addEventListener('click', () => handleHitR
 async function handleHitResponse(wasHit) {
   if (state.eventShotsTotal > 0) {
     // Disparo(s) bono de una tarjeta de evento
-    if (wasHit) state.eventPointsAccum += 1;
+    if (wasHit) state.eventPointsAccum += (state.eventMultiplier || 1);
     state.eventShotsRemaining -= 1;
 
     if (state.eventShotsRemaining > 0) {
@@ -326,6 +339,7 @@ async function handleHitResponse(wasHit) {
     state.eventShotsTotal = 0;
     state.eventShotsRemaining = 0;
     state.eventPointsAccum = 0;
+    state.eventMultiplier = 1;
     resetToDraw();
     return;
   }
@@ -348,18 +362,37 @@ async function handleHitResponse(wasHit) {
 function drawEventCard() {
   const card = EVENT_CARDS[Math.floor(Math.random() * EVENT_CARDS.length)];
   state.eventTitle = card.title;
-  state.eventShotsTotal = card.shots;
-  state.eventShotsRemaining = card.shots;
+  state.eventType = card.type;
+  state.eventShotsTotal = card.shots || 0;
+  state.eventShotsRemaining = card.shots || 0;
   state.eventPointsAccum = 0;
+  state.eventMultiplier = card.multiplier || 1;
 
   document.getElementById('event-title').textContent = card.title;
   document.getElementById('event-description').textContent = card.description;
   showZone('event');
 }
 
-document.getElementById('event-continue-btn').addEventListener('click', () => {
+document.getElementById('event-continue-btn').addEventListener('click', async () => {
+  if (state.eventType === 'skip') {
+    await submitTurn({
+      cardType: 'event',
+      equation: null,
+      correctAnswer: null,
+      playerAnswer: null,
+      answeredCorrectly: null,
+      coordinate: null,
+      hit: null,
+      points: 0,
+      eventCard: state.eventTitle,
+    });
+    resetToDraw();
+    return;
+  }
+
+  const multiplierNote = state.eventMultiplier > 1 ? ` (¡x${state.eventMultiplier} puntos!)` : '';
   document.getElementById('hit-coordinate').textContent =
-    state.eventShotsTotal > 1 ? `Disparo bono 1 de ${state.eventShotsTotal}` : 'Disparo bono';
+    (state.eventShotsTotal > 1 ? `Disparo bono 1 de ${state.eventShotsTotal}` : 'Disparo bono') + multiplierNote;
   showZone('hit');
 });
 
@@ -475,10 +508,13 @@ function resetToRegister() {
     channel: null,
     stopwatchInterval: null,
     currentEquationAnswer: null,
+    currentEquationPoints: 1,
     eventShotsRemaining: 0,
     eventShotsTotal: 0,
     eventPointsAccum: 0,
     eventTitle: '',
+    eventType: null,
+    eventMultiplier: 1,
   };
 
   document.getElementById('register-form').reset();
